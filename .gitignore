@@ -1,0 +1,41 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+dist/
+build/
+.eggs/
+
+# Node
+node_modules/
+.cache/
+
+# Environment
+.env
+config.env
+*.env.local
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Project outputs
+*.mp4
+*.png
+*.jpg
+*.srt
+*.vtt
+*.ass
+output/
+cleaned-podcasts/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Remotion
+out-*/
+node_modules/

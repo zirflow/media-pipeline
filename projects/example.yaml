@@ -1,0 +1,11 @@
+title: "AI Tools for Content Creators"
+tone: professional
+steps:
+  - script-factcheck
+  - cover
+params:
+  script-factcheck:
+    topic: "AI Tools for Content Creators"
+  cover:
+    type: youtube
+    title: "AI Tools for Content Creators"
