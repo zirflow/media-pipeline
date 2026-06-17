@@ -1,0 +1,8 @@
+# Core
+pyyaml>=6.0
+
+# Speech-to-text (subtitle + podcast steps)
+openai-whisper>=20231117
+
+# Optional: for script-factcheck step (stdlib only, no extra deps needed)
+# Uses urllib.request (stdlib) for LLM API calls

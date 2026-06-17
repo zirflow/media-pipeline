@@ -1,0 +1,74 @@
+name: Check Upstream Updates
+
+on:
+  schedule:
+    # 每周一早 8 点检查上游更新
+    - cron: "0 8 * * 1"
+  workflow_dispatch:  # 手动触发
+
+jobs:
+  check-submodules:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Check submodule updates
+        id: submodule
+        run: |
+          git submodule update --remote --init
+          if git diff --quiet; then
+            echo "No submodule updates"
+            echo "has_changes=false" >> $GITHUB_OUTPUT
+          else
+            echo "Submodules updated:"
+            git diff --submodule
+            echo "has_changes=true" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Create update PR if changes
+        if: steps.submodule.outputs.has_changes == 'true'
+        run: |
+          git config user.name "media-pipeline-bot"
+          git config user.email "bot@media-pipeline.dev"
+          BRANCH="update/upstream-$(date +%Y%m%d)"
+          git checkout -b "$BRANCH"
+          git commit -am "chore: sync upstream submodule updates"
+          git push origin "$BRANCH"
+          gh pr create \
+            --base main \
+            --head "$BRANCH" \
+            --title "Sync upstream submodule updates" \
+            --body "Automated update from upstream repositories.\n\nCheck `.gitmodules` for what changed." \
+            --label dependencies
+
+  check-remotion-release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check Remotion latest version
+        run: |
+          CURRENT=$(node -p "require('./pipelines/broll-cover/package.json').dependencies.remotion.replace('^','')")
+          LATEST=$(npm view remotion version)
+          echo "Current: $CURRENT"
+          echo "Latest:  $LATEST"
+          if [ "$CURRENT" != "$LATEST" ]; then
+            echo "⚠️ Remotion $LATEST available (current: $CURRENT)"
+            echo "has_update=true" >> $GITHUB_OUTPUT
+          fi
+      - name: Create issue if update available
+        if: steps.check-remotion-release.outputs.has_update == 'true'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const current = require('./pipelines/broll-cover/package.json').dependencies.remotion;
+            const latest = await github.rest.npm.getPackage({ package: 'remotion' });
+            github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: `Remotion update available: ${current} → ${latest}`,
+              body: `A new version of Remotion is available.\n- Current pinned: ${current}\n- Latest: ${latest}\n\nRun \`cd pipelines/broll-cover && npm update remotion\` to upgrade.`,
+              labels: ['dependencies', 'remotion']
+            });

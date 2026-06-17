@@ -32,10 +32,15 @@ Each step is **independent and optional**. Run what you need.
 ## Quick Start
 
 ```bash
-# Install
-git clone https://github.com/zirflow/media-pipeline.git
+# Clone (with submodules)
+git clone --recurse-submodules https://github.com/zirflow/media-pipeline.git
 cd media-pipeline
-pip install -r requirements.txt
+
+# Or if already cloned:
+git submodule update --init --recursive
+
+# Install dependencies
+make install
 
 # 1. Generate a script outline for a topic
 python3 pipeline.py --run script-factcheck --param topic="AI for content creators"
@@ -49,6 +54,20 @@ python3 pipeline.py --run podcast --param url="https://example.com/episode.mp3"
 # Full pipeline from a project file
 python3 pipeline.py --project projects/example.yaml
 ```
+
+## Keeping Upstream Dependencies Updated
+
+```bash
+# Check all upstream projects for new versions
+make update
+
+# Or manually:
+git submodule update --remote --recursive   # update podcast-ad-cleaner & wechat publisher
+cd pipelines/broll-cover && npm update      # update Remotion
+pip install --upgrade -r requirements.txt   # update Whisper
+```
+
+Dependabot runs weekly and GitHub Actions auto-creates PRs when upstream repos change.
 
 ## Pipeline Details
 

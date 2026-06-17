@@ -1,0 +1,6 @@
+[submodule "pipelines/podcast/repo"]
+	path = pipelines/podcast/repo
+	url = https://github.com/adamc199/podcast-ad-cleaner.git
+[submodule "pipelines/wechat-publish/repo"]
+	path = pipelines/wechat-publish/repo
+	url = https://github.com/aximof/wechat_artical_publisher_skill.git

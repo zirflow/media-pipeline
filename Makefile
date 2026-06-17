@@ -1,4 +1,4 @@
-.PHONY: install status script cover broll subtitle podcast wechat-publish push
+.PHONY: install status update script cover broll subtitle podcast wechat-publish push
 
 SHELL := /bin/bash
 ROOT := $(shell pwd)
@@ -31,6 +31,28 @@ status:
 	@test -d $(ROOT)/pipelines/podcast/repo && echo "  ✅ repo cloned" || echo "  ⚠️  run: cd pipelines/podcast && git clone https://github.com/adamc199/podcast-ad-cleaner.git repo"
 	@echo ""
 	@du -sh $(ROOT) 2>/dev/null
+
+## Initialize submodules (clone upstream repos)
+clone:
+	@echo "=== Initializing Submodules ==="
+	git submodule update --init --recursive
+	@echo "✅ Submodules initialized"
+	@echo "   podcast-ad-cleaner → pipelines/podcast/repo"
+	@echo "   wechat_artical_publisher_skill → pipelines/wechat-publish/repo"
+
+## Check for upstream updates
+update:
+	@echo "=== Checking Upstream Updates ==="
+	@python3 $(ROOT)/scripts/check-updates.py
+	@echo ""
+	@echo "=== Syncing Submodules ==="
+	git submodule update --remote --recursive 2>&1 | grep -v "^$" || echo "  Already up to date"
+	@echo ""
+	@echo "=== Syncing npm ==="
+	cd $(ROOT)/pipelines/broll-cover && npm update 2>&1 | tail -2
+	@echo ""
+	@echo "=== Syncing pip ==="
+	pip install --upgrade -r $(ROOT)/requirements.txt 2>&1 | tail -1
 
 ## Generate script outline + fact-check
 script:
